@@ -10,6 +10,7 @@ import { InvisibleEnemyCard } from "@/components/InvisibleEnemyCard";
 import { ActionCard } from "@/components/ActionCard";
 import { Timeline } from "@/components/Timeline";
 import { EntryHistory } from "@/components/EntryHistory";
+import { CompanionChat } from "@/components/CompanionChat";
 
 export default function Home() {
   // Subscribes directly to localStorage; re-renders whenever CheckinForm
@@ -39,6 +40,7 @@ export default function Home() {
 
         <div className="flex w-full flex-col gap-8">
           <CheckinForm />
+          <CompanionChat entries={entries} />
 
           {entries.length === 0 ? (
             <EmptyState />

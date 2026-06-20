@@ -111,3 +111,32 @@ export interface GeminiAnalysisResponse {
 export interface GeminiErrorResponse {
   error: string;
 }
+
+// ─── Companion Chat ──────────────────────────────────────────
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+/**
+ * Sent client -> /api/chat. `entries` travels with every request rather
+ * than living server-side: there's no database (see lib/storage.ts), so
+ * the client — the only place entries are persisted — supplies whatever
+ * history it has each time.
+ */
+export interface ChatRequest {
+  message: string;
+  conversation: ChatMessage[];
+  entries: JournalEntry[];
+}
+
+export interface ChatResponse {
+  reply: string;
+  /** True when a deterministic crisis-support message was returned
+   *  instead of a Gemini-generated reply — see lib/safety.ts. */
+  isCrisisResponse?: boolean;
+  /** True when Gemini failed/retried-out and this is the safe fallback,
+   *  mirroring AnalysisResult.isFallback. */
+  isFallback?: boolean;
+}

@@ -123,7 +123,9 @@ export function parseGeminiOutput(raw: string): AnalysisResult {
 
 // ─── Live Gemini call (server-side only) ─────────────────────
 
-async function callGemini(prompt: string): Promise<string> {
+/** Exported so other server-side callers (lib/companion.ts) reuse the same
+ *  key handling / endpoint / error wrapping instead of duplicating it. */
+export async function callGemini(prompt: string): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error(
