@@ -7,8 +7,10 @@
 
 import type { AnalysisResult, GeminiAnalysisRequest } from "@/types/mental";
 
-const GEMINI_MODEL = "gemini-2.0-flash";
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const OPENROUTER_ENDPOINT =
+  "https://openrouter.ai/api/v1/chat/completions";
+
+const OPENROUTER_MODEL = "google/gemini-2.5-flash";
 
 const REQUIRED_FIELDS = [
   "sentiment",
@@ -126,39 +128,55 @@ export function parseGeminiOutput(raw: string): AnalysisResult {
 /** Exported so other server-side callers (lib/companion.ts) reuse the same
  *  key handling / endpoint / error wrapping instead of duplicating it. */
 export async function callGemini(prompt: string): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.OPENROUTER_API_KEY;
+
   if (!apiKey) {
     throw new Error(
-      "GEMINI_API_KEY is not set. Add it to .env.local (server-side only)."
+      "OPENROUTER_API_KEY is not set."
     );
   }
 
-  const response = await fetch(`${GEMINI_ENDPOINT}?key=${apiKey}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.4,
-        responseMimeType: "application/json",
+  const response = await fetch(
+    "https://openrouter.ai/api/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
-    }),
-  });
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        temperature: 0.4,
+        max_tokens: 300,
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      }),
+    }
+  );
 
   if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(`Gemini request failed (${response.status}): ${body}`);
+    const body = await response.text();
+    throw new Error(
+      `OpenRouter request failed (${response.status}): ${body}`
+    );
   }
 
   const data = await response.json();
-  const text: string | undefined =
-    data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  const text =
+    data?.choices?.[0]?.message?.content;
 
   if (!text) {
-    throw new Error("Gemini response did not contain any text output.");
+    throw new Error(
+      "OpenRouter response did not contain text."
+    );
   }
 
-  return text;
+  return text.trim();
 }
 
 /**
