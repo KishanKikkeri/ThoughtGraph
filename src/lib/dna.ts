@@ -53,7 +53,8 @@ function rankByFrequency(counts: Map<string, number>): [string, number][] {
 // ─── Stress DNA ──────────────────────────────────────────────
 
 export function generateStressDNA(entries: JournalEntry[]): StressDNA {
-  if (entries.length === 0) {
+  const validEntries = entries.filter((e) => !e.analysis?.isFallback);
+  if (validEntries.length === 0) {
     return {
       primaryTrigger: INSUFFICIENT_DATA,
       secondaryTrigger: INSUFFICIENT_DATA,
@@ -63,7 +64,7 @@ export function generateStressDNA(entries: JournalEntry[]): StressDNA {
   }
 
   // Primary / secondary trigger — most frequent stressTriggers across all entries.
-  const allTriggers = entries.flatMap((e) => e.analysis.stressTriggers);
+  const allTriggers = validEntries.flatMap((e) => e.analysis.stressTriggers);
   const triggerRanking = rankByFrequency(countFrequencies(allTriggers));
 
   const primaryTrigger =
@@ -72,7 +73,7 @@ export function generateStressDNA(entries: JournalEntry[]): StressDNA {
     triggerRanking.length > 1 ? titleCase(triggerRanking[1][0]) : INSUFFICIENT_DATA;
 
   // Confidence driver — most frequent topic among high-confidence entries.
-  const highConfidenceEntries = entries.filter(
+  const highConfidenceEntries = validEntries.filter(
     (e) => e.analysis.confidenceScore >= HIGH_CONFIDENCE_THRESHOLD
   );
   const driverTopics = highConfidenceEntries.flatMap((e) => e.analysis.topics);
@@ -83,7 +84,7 @@ export function generateStressDNA(entries: JournalEntry[]): StressDNA {
   // Recovery style — compare confidence trend from earliest half to latest half.
   // Entries arrive newest-first, so reverse to chronological (oldest -> newest)
   // before splitting.
-  const chronological = [...entries].reverse();
+  const chronological = [...validEntries].reverse();
   const midpoint = Math.floor(chronological.length / 2);
   const earlyHalf = chronological.slice(0, midpoint);
   const lateHalf = chronological.slice(midpoint);
@@ -110,9 +111,10 @@ export function generateStressDNA(entries: JournalEntry[]): StressDNA {
 // ─── Invisible Enemy ─────────────────────────────────────────
 
 export function findInvisibleEnemy(entries: JournalEntry[]): InvisibleEnemy | null {
-  if (entries.length === 0) return null;
+  const validEntries = entries.filter((e) => !e.analysis?.isFallback);
+  if (validEntries.length === 0) return null;
 
-  const highStressEntries = entries.filter(
+  const highStressEntries = validEntries.filter(
     (e) => e.analysis.stressLevel >= HIGH_STRESS_THRESHOLD
   );
   if (highStressEntries.length === 0) return null;

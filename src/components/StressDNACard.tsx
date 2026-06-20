@@ -12,6 +12,8 @@ const FIELD_LABELS: { key: keyof StressDNA; label: string; testId: string }[] = 
  * deterministically by lib/dna.ts#generateStressDNA — never by Gemini.
  */
 export function StressDNACard({ dna }: { dna: StressDNA }) {
+  const hasData = Object.values(dna).some((val) => val !== "Insufficient data");
+
   return (
     <section
       aria-label="Stress DNA"
@@ -22,18 +24,24 @@ export function StressDNACard({ dna }: { dna: StressDNA }) {
         Four recurring strands, pulled from your check-in history.
       </p>
 
-      <dl className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {FIELD_LABELS.map(({ key, label, testId }) => (
-          <div key={key} className="rounded-xl border border-[var(--color-surface-line)] p-4">
-            <dt className="text-[0.65rem] font-medium uppercase tracking-[0.18em] text-[var(--color-ink-muted)]">
-              {label}
-            </dt>
-            <dd data-testid={testId} className="mt-1.5 text-sm leading-snug text-[var(--color-ink)]">
-              {dna[key]}
-            </dd>
-          </div>
-        ))}
-      </dl>
+      {!hasData ? (
+        <p className="mt-5 text-sm text-[var(--color-ink-muted)]">
+          Start journaling to build your Stress DNA.
+        </p>
+      ) : (
+        <dl className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {FIELD_LABELS.map(({ key, label, testId }) => (
+            <div key={key} className="rounded-xl border border-[var(--color-surface-line)] p-4">
+              <dt className="text-[0.65rem] font-medium uppercase tracking-[0.18em] text-[var(--color-ink-muted)]">
+                {label}
+              </dt>
+              <dd data-testid={testId} className="mt-1.5 text-sm leading-snug text-[var(--color-ink)]">
+                {dna[key]}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
     </section>
   );
 }

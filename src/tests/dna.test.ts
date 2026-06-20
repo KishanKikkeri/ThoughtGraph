@@ -12,6 +12,7 @@ function makeEntry(
     topics?: string[];
     mood?: number;
     sleepHours?: number;
+    isFallback?: boolean;
   }
 ): JournalEntry {
   const {
@@ -21,6 +22,7 @@ function makeEntry(
     topics = [],
     mood = 5,
     sleepHours = 7,
+    isFallback = false,
     ...rest
   } = overrides;
 
@@ -41,6 +43,7 @@ function makeEntry(
       topics,
       recommendedAction: "Study for 90 minutes then break.",
       followupQuestion: "What went well today?",
+      isFallback,
     },
     ...rest,
   };
@@ -119,6 +122,18 @@ describe("generateStressDNA", () => {
     const dna = generateStressDNA(entries);
     expect(dna.primaryTrigger).toBe("Fear Of Falling Behind");
   });
+
+  it("ignores fallback entries", () => {
+    const entries = [
+      makeEntry({ stressTriggers: ["mock tests"], isFallback: true }),
+      makeEntry({ stressTriggers: ["sleep"], isFallback: true }),
+    ];
+    const dna = generateStressDNA(entries);
+    expect(dna.primaryTrigger).toBe("Insufficient data");
+    expect(dna.secondaryTrigger).toBe("Insufficient data");
+    expect(dna.confidenceDriver).toBe("Insufficient data");
+    expect(dna.recoveryStyle).toBe("Insufficient data");
+  });
 });
 
 // ─── findInvisibleEnemy ───────────────────────
@@ -173,5 +188,14 @@ describe("findInvisibleEnemy", () => {
     ];
     const enemy = findInvisibleEnemy(entries);
     expect(enemy!.associatedWith).toContain("Low Confidence");
+  });
+
+  it("ignores fallback entries", () => {
+    const entries = [
+      makeEntry({ stressTriggers: ["mock tests"], stressLevel: 8, isFallback: true }),
+      makeEntry({ stressTriggers: ["mock tests"], stressLevel: 9, isFallback: true }),
+    ];
+    const enemy = findInvisibleEnemy(entries);
+    expect(enemy).toBeNull();
   });
 });

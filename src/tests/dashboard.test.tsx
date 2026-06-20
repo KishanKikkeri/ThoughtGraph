@@ -77,6 +77,19 @@ describe("StressDNACard", () => {
     render(<StressDNACard dna={MOCK_DNA} />);
     expect(screen.getByRole("region", { name: /stress dna/i })).toBeInTheDocument();
   });
+
+  it("renders a call to action message when all fields are 'Insufficient data'", () => {
+    const emptyDna: StressDNA = {
+      primaryTrigger: "Insufficient data",
+      secondaryTrigger: "Insufficient data",
+      confidenceDriver: "Insufficient data",
+      recoveryStyle: "Insufficient data",
+    };
+    render(<StressDNACard dna={emptyDna} />);
+    expect(
+      screen.getByText("Start journaling to build your Stress DNA.")
+    ).toBeInTheDocument();
+  });
 });
 
 // ─── InvisibleEnemy Card ──────────────────────
