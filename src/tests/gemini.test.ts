@@ -33,12 +33,21 @@ function geminiResponse(text: string): Response {
     ok: true,
     status: 200,
     text: async () => "",
-    json: async () => ({ candidates: [{ content: { parts: [{ text }] } }] }),
+    json: async () => ({
+      choices: [
+        {
+          message: {
+            role: "assistant",
+            content: text,
+          },
+        },
+      ],
+    }),
   } as Response;
 }
 
 beforeEach(() => {
-  vi.stubEnv("GEMINI_API_KEY", "test-key");
+  vi.stubEnv("OPENROUTER_API_KEY", "test-key");
 });
 
 afterEach(() => {
@@ -134,9 +143,9 @@ describe("analyzeJournal — AI instability", () => {
     expect(value.stressLevel).toBe(8);
   });
 
-  it("falls back without throwing when GEMINI_API_KEY is not configured", async () => {
+  it("falls back without throwing when OPENROUTER_API_KEY is not configured", async () => {
     vi.unstubAllEnvs();
-    vi.stubEnv("GEMINI_API_KEY", "");
+    vi.stubEnv("OPENROUTER_API_KEY", "");
 
     const value = await analyzeJournal(BASE_INPUT);
 

@@ -19,7 +19,7 @@ What's here:
 
 - Next.js 16 + TypeScript + Tailwind v4 app shell
 - Full type system (`src/types/mental.ts`)
-- Gemini client with a strict JSON prompt contract, validation, and a
+- OpenRouter client (calling Google Gemini 2.5 Flash via OpenRouter) with a strict JSON prompt contract, validation, and a
   retry-once-then-fallback safety pipeline (`src/lib/gemini.ts`)
 - Stress DNA + Invisible Enemy algorithms, computed locally — not by Gemini,
   so they're deterministic and fully testable (`src/lib/dna.ts`)
@@ -44,7 +44,7 @@ What's here:
 
 ```bash
 npm install
-cp .env.local.example .env.local   # then add your real GEMINI_API_KEY
+cp .env.local.example .env.local   # then add your real OPENROUTER_API_KEY
 npm run dev                        # http://localhost:3000
 ```
 
@@ -56,11 +56,11 @@ npm run lint         # ESLint
 
 ## AI safety pipeline
 
-A flaky or hostile Gemini response must never crash a check-in or the demo.
+A flaky or hostile OpenRouter response must never crash a check-in or the demo.
 `analyzeJournal()` in `src/lib/gemini.ts` enforces:
 
 ```text
-Prompt -> Gemini -> Validate JSON -> Retry (once) -> Fallback -> Store
+Prompt -> OpenRouter -> Validate JSON -> Retry (once) -> Fallback -> Store
 ```
 
 - Output is strictly validated (`parseGeminiOutput`): wrong type, missing
@@ -71,7 +71,7 @@ Prompt -> Gemini -> Validate JSON -> Retry (once) -> Fallback -> Store
   (`result.isFallback === true`) instead of throwing. It deliberately
   contains no fabricated triggers or topics, so the UI can say "we
   couldn't analyze this one" rather than presenting guesswork as evidence.
-- `POST /api/analyze` therefore returns `200` even when Gemini is down;
+- `POST /api/analyze` therefore returns `200` even when OpenRouter is down;
   the route's `try/catch` is just a backstop for genuinely unexpected
   errors, not the AI-instability path.
 
@@ -125,7 +125,7 @@ src/
 
 ## Security
 
-`GEMINI_API_KEY` is read only in `src/lib/gemini.ts`, called only from the
+`OPENROUTER_API_KEY` is read only in `src/lib/gemini.ts`, called only from the
 server-side `/api/analyze` route. It is never prefixed `NEXT_PUBLIC_` and
 never reaches the client bundle.
 

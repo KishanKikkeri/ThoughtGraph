@@ -37,7 +37,7 @@ const VALID_BODY = {
 };
 
 beforeEach(() => {
-  vi.stubEnv("GEMINI_API_KEY", "test-key");
+  vi.stubEnv("OPENROUTER_API_KEY", "test-key");
 });
 
 afterEach(() => {
@@ -87,22 +87,19 @@ describe("POST /api/analyze — success contract", () => {
         status: 200,
         text: async () => "",
         json: async () => ({
-          candidates: [
+          choices: [
             {
-              content: {
-                parts: [
-                  {
-                    text: JSON.stringify({
-                      sentiment: "negative",
-                      stressLevel: 8,
-                      confidenceScore: 0.3,
-                      stressTriggers: ["mock tests"],
-                      topics: ["physics"],
-                      recommendedAction: "Take a short break.",
-                      followupQuestion: "What felt hardest today?",
-                    }),
-                  },
-                ],
+              message: {
+                role: "assistant",
+                content: JSON.stringify({
+                  sentiment: "negative",
+                  stressLevel: 8,
+                  confidenceScore: 0.3,
+                  stressTriggers: ["mock tests"],
+                  topics: ["physics"],
+                  recommendedAction: "Take a short break.",
+                  followupQuestion: "What felt hardest today?",
+                }),
               },
             },
           ],

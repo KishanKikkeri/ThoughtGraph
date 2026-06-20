@@ -37,12 +37,21 @@ function geminiResponse(text: string): Response {
     ok: true,
     status: 200,
     text: async () => "",
-    json: async () => ({ candidates: [{ content: { parts: [{ text }] } }] }),
+    json: async () => ({
+      choices: [
+        {
+          message: {
+            role: "assistant",
+            content: text,
+          },
+        },
+      ],
+    }),
   } as Response;
 }
 
 beforeEach(() => {
-  vi.stubEnv("GEMINI_API_KEY", "test-key");
+  vi.stubEnv("OPENROUTER_API_KEY", "test-key");
 });
 
 afterEach(() => {
@@ -149,7 +158,7 @@ describe("getCompanionReply — happy path", () => {
     await getCompanionReply({ message: "It's mainly organic chemistry.", conversation, entries: [makeEntry()] });
 
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    const promptText = body.contents[0].parts[0].text;
+    const promptText = body.messages[0].content;
     expect(promptText).toContain("I'm worried about chemistry.");
     expect(promptText).toContain("organic chemistry");
   });

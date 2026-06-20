@@ -43,7 +43,7 @@ function makeEntry(overrides: Partial<JournalEntry> = {}): JournalEntry {
 }
 
 beforeEach(() => {
-  vi.stubEnv("GEMINI_API_KEY", "test-key");
+  vi.stubEnv("OPENROUTER_API_KEY", "test-key");
 });
 
 afterEach(() => {
@@ -80,7 +80,14 @@ describe("POST /api/chat — success contract", () => {
         status: 200,
         text: async () => "",
         json: async () => ({
-          candidates: [{ content: { parts: [{ text: "That sounds tough. One step at a time." }] } }],
+          choices: [
+            {
+              message: {
+                role: "assistant",
+                content: "That sounds tough. One step at a time.",
+              },
+            },
+          ],
         }),
       } as Response)
     );
